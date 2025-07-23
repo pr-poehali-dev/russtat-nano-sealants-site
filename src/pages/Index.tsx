@@ -2,32 +2,72 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import Icon from "@/components/ui/icon";
+import { useState } from "react";
 
 const Index = () => {
-  const products = [
+  const [products, setProducts] = useState([
     {
       id: 1,
-      name: "Nano Seal Pro",
-      description: "Профессиональный герметик-присадка для устранения микро утечек в автомобильных системах кондиционирования",
-      features: ["Быстрое действие", "Совместим с R134a", "Не засоряет систему"],
-      videoPlaceholder: "Видео инструкция будет добавлена"
+      name: "Nano White 12mL", 
+      description: "Белый герметик-присадка для систем кондиционирования с объемом 12мл",
+      features: ["Быстрое действие", "Совместим с R134a", "Точная дозировка"],
+      image: "https://cdn.poehali.dev/files/094b461d-73a5-4ed4-b57a-6afcea728c37.png",
+      videoUrl: "",
+      videoType: ""
     },
     {
       id: 2,
-      name: "Nano Seal Universal",
-      description: "Универсальный герметик для различных типов фреоновых систем с расширенной совместимостью",
-      features: ["Широкая совместимость", "Длительный эффект", "Простое применение"],
-      videoPlaceholder: "Видео инструкция будет добавлена"
+      name: "Nano Ultra 6mL",
+      description: "Ультра формула в компактном шприце объемом 6мл для точного применения",
+      features: ["Компактный размер", "Ультра формула", "Простое применение"],
+      image: "https://cdn.poehali.dev/files/7f9eb5f9-0c22-4b39-90eb-0c5d81087aac.png",
+      videoUrl: "",
+      videoType: ""
     },
     {
       id: 3,
-      name: "Nano Seal Heavy Duty",
-      description: "Усиленная формула для коммерческих и промышленных холодильных установок",
-      features: ["Усиленная формула", "Для больших систем", "Промышленное качество"],
-      videoPlaceholder: "Видео инструкция будет добавлена"
+      name: "Nano Blue 30mL",
+      description: "Синий герметик увеличенного объема 30мл для профессионального использования",
+      features: ["Большой объем", "Профессиональная формула", "Промышленное качество"],
+      image: "https://cdn.poehali.dev/files/a78f648a-53f4-46aa-8756-979533ad6955.png",
+      videoUrl: "",
+      videoType: ""
     }
-  ];
+  ]);
+
+  const [selectedProduct, setSelectedProduct] = useState(null);
+  const [videoForm, setVideoForm] = useState({ url: "", type: "youtube" });
+
+  const handleVideoSave = () => {
+    if (selectedProduct && videoForm.url) {
+      setProducts(prevProducts => 
+        prevProducts.map(product => 
+          product.id === selectedProduct.id 
+            ? { ...product, videoUrl: videoForm.url, videoType: videoForm.type }
+            : product
+        )
+      );
+      setVideoForm({ url: "", type: "youtube" });
+      setSelectedProduct(null);
+    }
+  };
+
+  const getVideoEmbedUrl = (url, type) => {
+    if (!url) return "";
+    
+    if (type === "youtube") {
+      const videoId = url.includes("v=") ? url.split("v=")[1]?.split("&")[0] : url.split("/").pop();
+      return `https://www.youtube.com/embed/${videoId}`;
+    } else if (type === "rutube") {
+      const videoId = url.includes("/video/") ? url.split("/video/")[1]?.split("/")[0] : url.split("/").pop();
+      return `https://rutube.ru/play/embed/${videoId}`;
+    }
+    return url;
+  };
 
   return (
     <div className="min-h-screen bg-white">
@@ -105,8 +145,12 @@ const Index = () => {
             {products.map((product, index) => (
               <Card key={product.id} className="hover-scale animate-fade-in hover:shadow-lg transition-all duration-300" style={{animationDelay: `${index * 0.1}s`}}>
                 <CardHeader>
-                  <div className="w-full h-48 bg-gradient-to-br from-[#2563EB] to-[#1E40AF] rounded-lg mb-4 flex items-center justify-center">
-                    <Icon name="Beaker" size={48} className="text-white" />
+                  <div className="w-full h-48 bg-white rounded-lg mb-4 flex items-center justify-center p-4">
+                    <img 
+                      src={product.image} 
+                      alt={product.name}
+                      className="max-w-full max-h-full object-contain"
+                    />
                   </div>
                   <CardTitle className="text-[#1E293B]">{product.name}</CardTitle>
                   <CardDescription>{product.description}</CardDescription>
@@ -124,7 +168,9 @@ const Index = () => {
                     <div className="p-3 bg-blue-50 rounded-lg">
                       <div className="flex items-center gap-2 text-[#2563EB]">
                         <Icon name="PlayCircle" size={20} />
-                        <span className="text-sm font-medium">{product.videoPlaceholder}</span>
+                        <span className="text-sm font-medium">
+                          {product.videoUrl ? "Видео инструкция готова" : "Видео инструкция будет добавлена"}
+                        </span>
                       </div>
                     </div>
                     <Button className="w-full">
@@ -190,16 +236,86 @@ const Index = () => {
             {products.map((product, index) => (
               <Card key={product.id} className="hover-scale transition-all duration-300">
                 <CardHeader>
-                  <div className="aspect-video bg-gradient-to-br from-gray-100 to-gray-200 rounded-lg flex items-center justify-center mb-4">
-                    <div className="text-center">
-                      <Icon name="PlayCircle" size={48} className="text-[#2563EB] mb-2 mx-auto" />
-                      <p className="text-sm text-gray-600">Видео будет загружено</p>
-                    </div>
+                  <div className="aspect-video bg-gradient-to-br from-gray-100 to-gray-200 rounded-lg flex items-center justify-center mb-4 overflow-hidden">
+                    {product.videoUrl ? (
+                      <iframe
+                        src={getVideoEmbedUrl(product.videoUrl, product.videoType)}
+                        className="w-full h-full rounded-lg"
+                        frameBorder="0"
+                        allowFullScreen
+                        title={`Видео инструкция для ${product.name}`}
+                      />
+                    ) : (
+                      <div className="text-center">
+                        <Icon name="PlayCircle" size={48} className="text-[#2563EB] mb-2 mx-auto" />
+                        <p className="text-sm text-gray-600">Видео будет загружено</p>
+                      </div>
+                    )}
                   </div>
                   <CardTitle className="text-[#1E293B]">Инструкция: {product.name}</CardTitle>
                   <CardDescription>Пошаговое руководство по применению</CardDescription>
                 </CardHeader>
-                <CardContent>
+                <CardContent className="space-y-3">
+                  <Dialog>
+                    <DialogTrigger asChild>
+                      <Button 
+                        variant="outline" 
+                        className="w-full"
+                        onClick={() => {
+                          setSelectedProduct(product);
+                          setVideoForm({ url: product.videoUrl || "", type: product.videoType || "youtube" });
+                        }}
+                      >
+                        <Icon name="Upload" className="mr-2" size={16} />
+                        {product.videoUrl ? "Изменить видео" : "Загрузить видео"}
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent className="sm:max-w-md">
+                      <DialogHeader>
+                        <DialogTitle>Загрузить видео для {product.name}</DialogTitle>
+                        <DialogDescription>
+                          Добавьте ссылку на видео с YouTube или Rutube
+                        </DialogDescription>
+                      </DialogHeader>
+                      <div className="space-y-4">
+                        <div>
+                          <label className="block text-sm font-medium mb-2">Платформа</label>
+                          <Select 
+                            value={videoForm.type} 
+                            onValueChange={(value) => setVideoForm(prev => ({ ...prev, type: value }))}
+                          >
+                            <SelectTrigger>
+                              <SelectValue placeholder="Выберите платформу" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="youtube">YouTube</SelectItem>
+                              <SelectItem value="rutube">Rutube</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium mb-2">Ссылка на видео</label>
+                          <Input
+                            placeholder={videoForm.type === "youtube" ? 
+                              "https://www.youtube.com/watch?v=..." : 
+                              "https://rutube.ru/video/..."
+                            }
+                            value={videoForm.url}
+                            onChange={(e) => setVideoForm(prev => ({ ...prev, url: e.target.value }))}
+                          />
+                        </div>
+                        <div className="flex justify-end space-x-2">
+                          <Button variant="outline" onClick={() => setSelectedProduct(null)}>
+                            Отмена
+                          </Button>
+                          <Button onClick={handleVideoSave}>
+                            <Icon name="Save" className="mr-2" size={16} />
+                            Сохранить
+                          </Button>
+                        </div>
+                      </div>
+                    </DialogContent>
+                  </Dialog>
                   <Button variant="outline" className="w-full">
                     <Icon name="Download" className="mr-2" size={16} />
                     Скачать PDF инструкцию
@@ -328,9 +444,9 @@ const Index = () => {
             <div>
               <h3 className="font-semibold mb-4">Продукция</h3>
               <ul className="space-y-2 text-sm text-gray-400">
-                <li>Nano Seal Pro</li>
-                <li>Nano Seal Universal</li>
-                <li>Nano Seal Heavy Duty</li>
+                <li>Nano White 12mL</li>
+                <li>Nano Ultra 6mL</li>
+                <li>Nano Blue 30mL</li>
               </ul>
             </div>
             <div>
